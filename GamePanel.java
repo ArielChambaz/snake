@@ -29,6 +29,7 @@ public class GamePanel extends JPanel implements ActionListener {
     int moveEvery = 10;
 
     JButton retryButton;
+    JButton backButton;
     String playerName = "Anonymous";
     String mode = "Classic";
 
@@ -52,11 +53,34 @@ public class GamePanel extends JPanel implements ActionListener {
         retryButton.setVisible(false);
         this.add(retryButton);
 
+        backButton = new JButton("Back to Menu");
+        backButton.setBounds(SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 90, 150, 40);
+        backButton.setFocusable(false);
+        backButton.setVisible(false);
+        backButton.addActionListener(e -> {
+            Window window = SwingUtilities.getWindowAncestor(this);
+            if (window instanceof JFrame frame) {
+                frame.getContentPane().removeAll();
+                frame.add(new GameMenu((name, modeSelected) -> {
+                    GamePanel newGame = new GamePanel(name, modeSelected);
+                    frame.getContentPane().removeAll();
+                    frame.add(newGame);
+                    newGame.requestFocusInWindow();
+                    frame.revalidate();
+                    frame.repaint();
+                }));
+                frame.revalidate();
+                frame.repaint();
+            }
+        });
+        this.add(backButton);
+
         startGame();
     }
 
     public void startGame() {
         retryButton.setVisible(false);
+        backButton.setVisible(false);
         if (timer != null) {
             timer.stop();
         }
@@ -157,6 +181,7 @@ public class GamePanel extends JPanel implements ActionListener {
             timer.stop();
             saveScore();
             retryButton.setVisible(true);
+            backButton.setVisible(true);
         }
     }
 
