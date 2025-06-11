@@ -16,7 +16,7 @@ public class GamePanel extends JPanel implements ActionListener {
     int applesEaten;
     int appleX;
     int appleY;
-    char direction = 'R'; // 'U', 'D', 'L', 'R'
+    Direction direction = Direction.RIGHT;
     boolean running = false;
     Timer timer;
     Random random;
@@ -25,6 +25,8 @@ public class GamePanel extends JPanel implements ActionListener {
     int moveEvery = 10; // move snake every 10 frames (~14.4 moves/sec)
 
     JButton retryButton;
+
+    enum Direction { UP, DOWN, LEFT, RIGHT }
 
     public GamePanel() {
         random = new Random();
@@ -45,18 +47,25 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     public void startGame() {
+        retryButton.setVisible(false);
+        if (timer != null) {
+            timer.stop();
+        }
+        resetGameState();
         newApple();
+        running = true;
+        timer = new Timer(DELAY, this);
+        timer.start();
+    }
+
+    private void resetGameState() {
         bodyParts = 6;
         applesEaten = 0;
-        direction = 'R';
+        direction = Direction.RIGHT;
         for (int i = 0; i < bodyParts; i++) {
             x[i] = 100 - i * UNIT_SIZE;
             y[i] = 100;
         }
-        running = true;
-        retryButton.setVisible(false);
-        timer = new Timer(DELAY, this);
-        timer.start();
     }
 
     public void restartGame() {
@@ -109,10 +118,10 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         switch (direction) {
-            case 'U': y[0] -= UNIT_SIZE; break;
-            case 'D': y[0] += UNIT_SIZE; break;
-            case 'L': x[0] -= UNIT_SIZE; break;
-            case 'R': x[0] += UNIT_SIZE; break;
+            case UP -> y[0] -= UNIT_SIZE;
+            case DOWN -> y[0] += UNIT_SIZE;
+            case LEFT -> x[0] -= UNIT_SIZE;
+            case RIGHT -> x[0] += UNIT_SIZE;
         }
     }
 
@@ -144,7 +153,10 @@ public class GamePanel extends JPanel implements ActionListener {
     public void gameOver(Graphics g) {
         g.setColor(Color.red);
         g.setFont(new Font("Ink Free", Font.BOLD, 40));
-        g.drawString("Game Over", SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2);
+        String message = "Game Over";
+        FontMetrics metrics = getFontMetrics(g.getFont());
+        int textWidth = metrics.stringWidth(message);
+        g.drawString(message, (SCREEN_WIDTH - textWidth) / 2, SCREEN_HEIGHT / 2);
     }
 
     @Override
@@ -165,16 +177,16 @@ public class GamePanel extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (direction != 'R') direction = 'L';
+                    if (direction != Direction.RIGHT) direction = Direction.LEFT;
                     break;
                 case KeyEvent.VK_RIGHT:
-                    if (direction != 'L') direction = 'R';
+                    if (direction != Direction.LEFT) direction = Direction.RIGHT;
                     break;
                 case KeyEvent.VK_UP:
-                    if (direction != 'D') direction = 'U';
+                    if (direction != Direction.DOWN) direction = Direction.UP;
                     break;
                 case KeyEvent.VK_DOWN:
-                    if (direction != 'U') direction = 'D';
+                    if (direction != Direction.UP) direction = Direction.DOWN;
                     break;
             }
         }
