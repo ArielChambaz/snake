@@ -1,14 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class GamePanel extends JPanel implements ActionListener {
     static final int SCREEN_WIDTH = 600;
     static final int SCREEN_HEIGHT = 600;
     static final int UNIT_SIZE = 25;
     static final int GAME_UNITS = (SCREEN_WIDTH * SCREEN_HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
-    static final int DELAY = 7; // ~144Hz
+    static final int DELAY = 7;
 
     final int x[] = new int[GAME_UNITS];
     final int y[] = new int[GAME_UNITS];
@@ -22,13 +26,18 @@ public class GamePanel extends JPanel implements ActionListener {
     Random random;
 
     int tickCounter = 0;
-    int moveEvery = 10; // move snake every 10 frames (~14.4 moves/sec)
+    int moveEvery = 10;
 
     JButton retryButton;
+    String playerName = "Anonymous";
+    String mode = "Classic";
 
     enum Direction { UP, DOWN, LEFT, RIGHT }
 
-    public GamePanel() {
+    public GamePanel(String playerName, String mode) {
+        this.playerName = playerName;
+        this.mode = mode;
+
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.black);
@@ -146,7 +155,21 @@ public class GamePanel extends JPanel implements ActionListener {
 
         if (!running) {
             timer.stop();
+            saveScore();
             retryButton.setVisible(true);
+        }
+    }
+
+    public void saveScore() {
+        JSONObject playerData = new JSONObject();
+        playerData.put("name", playerName);
+        playerData.put("score", applesEaten);
+        playerData.put("mode", mode);
+
+        try (FileWriter file = new FileWriter("scores.json", true)) {
+            file.write(playerData.toJSONString() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
